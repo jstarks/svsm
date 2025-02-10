@@ -1,0 +1,122 @@
+# Adding std support
+
+This essentially amounts to porting Rust's `std` library to the new target.
+
+This is easiest if coconut conforms to POSIX-ish behavior where practical. Don't
+unnecessarily invent a new thing unless the benefit is real.
+
+## `coconut-abi` crate
+
+We need a crate (perhaps called `coconut-abi`) that provides the low-level
+primitives for `std` to use. This crate will ultimately need to be in crates.io
+for us to upstream the rust repo changes.
+
+This is similar to the `syscall` crate, but lower level:
+
+* No need for extra type safety constructs (e.g., `Obj` trait), since those will
+  get in the way of `std`'s equivalents.
+* Similarly, no owning RAII types (just expose `close()`, don't call it on
+  `Drop` of some type).
+* Doesn't have to be just syscall wrappers. E.g., `malloc` should be exposed
+  here.
+
+The code actually inside this crate should be minimal, though, since it will be
+hard to change--it will be referenced by the Rust code with a specific version
+number, and so it will require a new Rust compiler to update.
+
+So, e.g., `malloc` should just be an `extern "C"` function that references some
+library that you build as part of the Coconut SDK. Otherwise, we can't change
+the `malloc` implementation or fix bugs without updating Rust.
+
+Open question: what about straightforward syscall wrappers? Should they be
+`extern "C"` functions, or can we just put the syscall invocation directly in
+the crate? Do we need the flexibility to change the syscall ABI easily?
+
+## Allocator
+
+We need a general-purpose allocator. Easiest if this conforms to the POSIX API:
+
+* `malloc`
+* `posix_memalign`
+* `calloc`
+* `realloc`
+* `free`
+
+## File descriptors
+
+How is the `Obj` handle thing different from file descriptors? Can we make them
+more like POSIX file descriptors, so that we can use Rust's
+`OwnedFd`/`AsFd`/etc. types and traits?
+
+* Can we "reserve" 0, 1, and 2 for stdin/stdout/stderr, even if stdin does
+  nothing and stdout/stderr are internally aliased? Today it looks like stdout
+  is 0, which is an unnecessary divergence.
+* Will `SYS_CLOSE` work for all objects?
+* Can we support duplicating fds? Into a specific fd?
+
+## Mutex
+
+To support sync types `Mutex`, `RwLock`, `OnceLock`, etc., it will be easiest to
+offer a futex-like API:
+
+```rust
+fn futex_wait(p: &AtomicU32, v: u32, timeout: Option<Duration>);
+fn futex_wake(p: &AtomicU32);
+fn futex_wake_all(p: &AtomicU32);
+```
+
+`futex_wait` should wait for `p.load() != v`, `futex_wake` should ensure that
+one thread in `futex_wait` reevaluates the condition, `futex_wake_all` should
+ensure that all threads reevaluate the condition.
+
+For now, we can just implement this by spinning in user mode. But we should
+provide an API for it (and maybe even a set of syscalls), so that we have the
+flexibility to change this later without further changes to `std`.
+
+## Time
+
+We need a monotonic clock (i.e., `CLOCK_MONOTONIC`) to support waits with
+timeouts, logging, etc. This can be a syscall initially, but it would be good to
+implement this with a shared page + rdtsc or whatever.
+
+If we can somehow support `CLOCK_REALTIME`, that would be interesting, but I am
+not really sure what this means in a CVM world--you can never trust the value,
+so what can you do with it? And seeding this time requires some
+non-architectural communication with the host, unless you have networking and
+NTP.
+
+## Thread support
+
+Expectations:
+
+* Spawn a thread that shares the virtual address space and file descriptor
+  table.
+* Take the stack size as a parameter (side question: how do we ensure stack
+  probing is enabled?), have a guard page.
+* Support thread-local storage (TLS), probably via the "initial-exec" model
+  since we don't intend to support `dlopen`.
+  * I.e., have the thread start routine allocate the appropriately sized blob
+    based on the ELF headers and store a pointer to it at `%fs:0`. Free this on
+    thread exit.
+  * Don't worry about destructors--we can handle this in `std`, as long as only
+    `std` is expected to spawn threads.
+  * If we want non-Rust code to be able to spawn threads, things get more
+    complicated.
+
+## Misc
+
+* Name the target (x86_64-unknown-coconut?)
+
+## Unrelated ideas
+
+* Can we change `SYS_EXEC` to take a file instead of a path?
+* Can we use counted strings instead of null-terminated in the syscall
+  interface? Seems silly to require an allocation to add a null terminator, and
+  to add more complexity+geometric growth algorithm to the kernel side, given
+  that we use counted strings on both sides.
+* Let's add command line parameters to process startup.
+* What about environment variables? Are these useful for anything?
+* `SYS_CLOSE` should abort the process on invalid input.
+* I'd suggest removing "ambient" state from the ABI--replace `SYS_OPEN` with
+  `SYS_OPEN_AT` and require the process to be passed a root directory fd at
+  start.
