@@ -87,21 +87,25 @@ NTP.
 
 ## Thread support
 
-Expectations:
+Core requirements:
 
-* Spawn a thread that shares the virtual address space and file descriptor
+* Threads share the virtual address space and file descriptor
   table.
-* Take the stack size as a parameter (side question: how do we ensure stack
-  probing is enabled?), have a guard page.
-* Support thread-local storage (TLS), probably via the "initial-exec" model
-  since we don't intend to support `dlopen`.
-  * I.e., have the thread start routine allocate the appropriately sized blob
-    based on the ELF headers and store a pointer to it at `%fs:0`. Free this on
-    thread exit.
-  * Don't worry about destructors--we can handle this in `std`, as long as only
-    `std` is expected to spawn threads.
-  * If we want non-Rust code to be able to spawn threads, things get more
-    complicated.
+* Thread-local storage (TLS) is supported, probably via the "initial-exec" model
+  since we don't intend to support `dlopen`. I.e., have the thread start routine
+  allocate the appropriately sized blob based on the ELF headers and store a
+  pointer to it at `%fs:0`. Free this blob on thread exit.
+
+If we want to support general-purpose threading, then we'll want to support
+`std::thread::spawn`/`std::thread::Builder`. This means ideally we support
+configurable stack sizes and thread names.
+
+If we want to support threads not spawned by `std` but that _can_ exit before
+the process exits, then we need to support Rust registering a function to run
+when the thread exits (to run TLS destructors). I think we should probably
+support this anyway, just in case. This could be via some special ELF construct
+(a la Windows TLS) or via a function in `coconut-abi` that dynamically adds a
+destructor to some table.
 
 ## Misc
 
