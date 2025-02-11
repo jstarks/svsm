@@ -76,6 +76,7 @@ panic = 'abort'
 
 [profile.dev]
 panic = 'abort'
+strip = 'symbols'
 
 [workspace.lints.rust]
 future_incompatible = { level = "deny", priority = 127 }

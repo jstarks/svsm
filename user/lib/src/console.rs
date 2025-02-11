@@ -21,6 +21,7 @@ impl fmt::Write for ConsoleWriter {
     fn write_str(&mut self, s: &str) -> fmt::Result {
         // Ignore any errors from console writing.
         let _ = write_console(s.as_bytes());
+        syscall::exit(583);
         Ok(())
     }
 }
@@ -35,11 +36,11 @@ pub fn console_print(args: fmt::Arguments<'_>) {
 
 #[macro_export]
 macro_rules! print {
-        ($($arg:tt)*) => (console_print(format_args!($($arg)*)))
+        ($($arg:tt)*) => ($crate::console_print(format_args!($($arg)*)))
 }
 
 #[macro_export]
 macro_rules! println {
-    () => (print!("\n"));
-    ($($arg:tt)*) => (print!("{}\n", format_args!($($arg)*)));
+    () => ($crate::print!("\n"));
+    ($($arg:tt)*) => ($crate::print!("{}\n", format_args!($($arg)*)));
 }

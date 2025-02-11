@@ -193,7 +193,7 @@ impl IgvmBuilder {
     fn create_param_block(&self) -> Result<IgvmParamBlock, Box<dyn Error>> {
         let param_page_offset = PAGE_SIZE_4K as u32;
         let memory_map_offset = param_page_offset + PAGE_SIZE_4K as u32;
-        let kernel_min_size = 0x1000000; // 16 MiB
+        let kernel_min_size = 0x10000000; // 16 MiB
         let (guest_context_offset, param_area_size) = if self.gpa_map.guest_context.get_size() == 0
         {
             (0, memory_map_offset + PAGE_SIZE_4K as u32)

@@ -24,7 +24,7 @@ fn write(arr: &mut [u64; 128], val: u64) {
 //declare_main!(main);
 
 fn main() {
-    userlib::println!("COCONUT-SVSM init process starting");
+    ferris_says::say("COCONUT-SVSM init process, built with std, starting", 72, std::io::BufWriter::new(std::io::stdout()));
 
     // SAFETY: Single-threaded process, so no data races. Safe to access global
     // mutable data.
@@ -35,4 +35,6 @@ fn main() {
         check(&*addr_of!(SOME_RO_DATA), 0xeeu64);
         check(&*addr_of!(SOME_BSS_DATA), 0xaa);
     }
+
+    panic!("panic works");
 }

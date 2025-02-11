@@ -332,7 +332,7 @@ def cargo_build(package, config, target, args):
         runner.enable_binary()
     if config.get("manifest"):
         runner.set_manifest(config.get("manifest"))
-    if args.release:
+    if args.release or target == "x86_64-unknown-coconut":
         runner.enable_release()
     if args.verbose:
         runner.enable_verbose()
@@ -485,6 +485,8 @@ def build_fs_image(args, fs_config, helpers):
     m_recipe = fs_config.get("modules")
     if len(m_recipe) == 0:
         return None
+
+    cargo_build("coconut", {}, get_svsm_user_target(), args)
 
     binaries = recipe_build(m_recipe, get_svsm_user_target(), args)
     for binary, source_path in binaries.items():

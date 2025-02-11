@@ -4,7 +4,7 @@ pub use core::ffi::{c_int, c_short, c_void};
 
 #[link(name = "coconut")]
 unsafe extern "C" {
-    pub safe fn exit(v: u32) -> !;
+    pub safe fn exit(v: i32) -> !;
     pub unsafe fn write(i: i32, p: *const u8, len: usize) -> isize;
 
     pub fn malloc(n: usize) -> *mut c_void;

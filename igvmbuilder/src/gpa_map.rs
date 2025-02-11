@@ -129,7 +129,7 @@ impl GpaMap {
             }
             Hypervisor::HyperV => {
                 // Place the kernel area at 64 MB with a maximum size of 16 MB.
-                GpaRange::new(0x04000000, 0x01000000)?
+                GpaRange::new(0x04000000, 0x10000000)?
             }
             Hypervisor::Vanadium => {
                 // Place the kernel area at 8TiB-2GiB with a maximum size of 2 GiB.

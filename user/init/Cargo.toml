@@ -4,8 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-userlib.workspace = true
-coconut = { path = "../../libcoconut" }
+ferris-says = "0.3"
 
 [lints]
 workspace = true
