@@ -28,8 +28,10 @@ macro_rules! declare_main {
     };
 }
 
+/*
 #[panic_handler]
 fn panic(info: &PanicInfo<'_>) -> ! {
     println!("Panic: {}", info);
     exit(!0);
 }
+*/

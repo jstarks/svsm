@@ -24,6 +24,7 @@ class CargoRunner:
         self.manifest = None
         self.offline = False
         self.verbose = False
+        self.toolchain = None
 
     def set_package(self, package):
         """
@@ -73,6 +74,12 @@ class CargoRunner:
         """
         self.verbose = True
 
+    def set_toolchain(self, toolchain):
+        """
+        Sets the toolchain to build with.
+        """
+        self.toolchain = toolchain
+
     def execute(self):
         """
         Executes the cargo command.
@@ -80,7 +87,10 @@ class CargoRunner:
         if self.package is None:
             raise ValueError("Package not set")
 
-        command = ["cargo", "build"]
+        command = ["cargo"]
+        if self.toolchain:
+            command.extend([f'+{self.toolchain}'])
+        command.extend(["build"])
         if self.verbose:
             command.append("-vv")
         if self.binary:
@@ -273,7 +283,7 @@ def get_svsm_user_target():
     Returns the Rust target for building the user-space components which are
     packaged into the SVSM file-system image.
     """
-    return "x86_64-unknown-none"
+    return "x86_64-unknown-coconut"
 
 def get_svsm_elf_target():
     """
@@ -313,6 +323,8 @@ def cargo_build(package, config, target, args):
       Path to the binary built with cargo.
     """
     runner = CargoRunner(package)
+    if target == "x86_64-unknown-coconut":
+        runner.set_toolchain("stage1")
     runner.set_target(target)
     for feature in config.get("features", []):
         runner.add_feature(feature)
@@ -381,7 +393,7 @@ def recipe_build(recipe, target, args):
             raise ValueError("Unknown build type: {}".format(build_type))
 
         binaries[package] = binary
-        
+
     return binaries
 
 def build_helpers(args):
@@ -502,7 +514,7 @@ def build_igvm_files(args, helpers, igvm_config, parts_config):
                    parameter dictionaries as values.
       parts_config: A Python dictionary with information about the COCONUT
                     kernel parts and firmware to include in all IGVM files.
-      
+
     """
     for target, config in igvm_config.items():
         build_igvm_file_one(args, helpers, config, parts_config)
@@ -680,7 +692,7 @@ def parse_arguments():
     parser.add_argument(
         "recipe",
 	nargs="+",
-        metavar="RECIPE", 
+        metavar="RECIPE",
         help="Path to the JSON build recipe file"
     )
     return parser.parse_args()

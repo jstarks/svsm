@@ -107,6 +107,13 @@ support this anyway, just in case. This could be via some special ELF construct
 (a la Windows TLS) or via a function in `coconut-abi` that dynamically adds a
 destructor to some table.
 
+## Random numbers
+
+Rust expects to use a cryptographic PRNG at startup to seed hash table hash
+generation. We can work around this for now in various ways, but this will only
+become more important over time (`std` will sooner or later get support for
+generating cryptographically random numbers on demand).
+
 ## Misc
 
 * Name the target (x86_64-unknown-coconut?)

@@ -14,7 +14,6 @@
     },
     "kernel": {
         "svsm": {
-            "features": "vtpm",
             "binary": true
         },
         "stage2": {

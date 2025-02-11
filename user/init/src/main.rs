@@ -1,7 +1,5 @@
-#![no_std]
-#![no_main]
-
-use userlib::*;
+//#![no_std]
+//#![no_main]
 
 use core::ptr::{addr_of, addr_of_mut};
 
@@ -23,10 +21,10 @@ fn write(arr: &mut [u64; 128], val: u64) {
     }
 }
 
-declare_main!(main);
+//declare_main!(main);
 
-fn main() -> u32 {
-    println!("COCONUT-SVSM init process starting");
+fn main() {
+    userlib::println!("COCONUT-SVSM init process starting");
 
     // SAFETY: Single-threaded process, so no data races. Safe to access global
     // mutable data.
@@ -37,5 +35,4 @@ fn main() -> u32 {
         check(&*addr_of!(SOME_RO_DATA), 0xeeu64);
         check(&*addr_of!(SOME_BSS_DATA), 0xaa);
     }
-    0
 }

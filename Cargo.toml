@@ -25,7 +25,7 @@ members = [
     # Init user-space module
     "user/init",
     # Release version identifier
-    "release",
+    "release", "coconut-abi", "libcoconut",
 ]
 
 
