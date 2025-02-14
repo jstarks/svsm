@@ -27,7 +27,9 @@ members = [
     # Release version identifier
     "release", "coconut-abi", "libcoconut",
 ]
-
+exclude = [
+    "rust"
+]
 
 [workspace.dependencies]
 # internal library crates

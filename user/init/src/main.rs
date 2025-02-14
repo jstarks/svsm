@@ -24,7 +24,12 @@ fn write(arr: &mut [u64; 128], val: u64) {
 //declare_main!(main);
 
 fn main() {
-    ferris_says::say("COCONUT-SVSM init process, built with std, starting", 72, std::io::BufWriter::new(std::io::stdout()));
+    ferris_says::say(
+        "COCONUT-SVSM init process, built with std, starting",
+        72,
+        std::io::BufWriter::new(std::io::stdout()),
+    )
+    .unwrap();
 
     // SAFETY: Single-threaded process, so no data races. Safe to access global
     // mutable data.

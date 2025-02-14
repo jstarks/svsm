@@ -1,5 +1,4 @@
-[build]
-target = "x86_64-unknown-none"
+[target.x86_64-unknown-none]
 rustflags = [
 	"-C", "force-frame-pointers",
 	"-C", "linker-flavor=ld",
@@ -8,7 +7,10 @@ rustflags = [
 ]
 
 [target.x86_64-unknown-coconut]
-rustflags = [ "-L", "target/x86_64-unknown-coconut/release" ]
+rustflags = [
+	"-L",
+	"target/x86_64-unknown-coconut/release"
+]
 
 
 [target.x86_64-unknown-linux-gnu]

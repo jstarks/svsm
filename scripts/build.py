@@ -324,7 +324,7 @@ def cargo_build(package, config, target, args):
     """
     runner = CargoRunner(package)
     if target == "x86_64-unknown-coconut":
-        runner.set_toolchain("stage1")
+        runner.set_toolchain(os.path.abspath("rust/build/host/stage1"))
     runner.set_target(target)
     for feature in config.get("features", []):
         runner.add_feature(feature)
@@ -343,7 +343,7 @@ def cargo_build(package, config, target, args):
 
     return runner.get_binary_path()
 
-def make_build(package, config, args):
+def make_build(package, config, target, args):
     """
     Run a single build step using GNU Make.
 
@@ -362,7 +362,7 @@ def make_build(package, config, args):
         if args.verbose:
             command.append("V=2")
             print(command)
-        subprocess.run(command, check=True)
+        subprocess.run(command, check=True, env=dict(os.environ, CARGO_BUILD_TARGET=target))
         return config["file"]
     else:
         raise ValueError("Build type make in package {} requires an 'output_file' attribute".format(package));
@@ -388,7 +388,7 @@ def recipe_build(recipe, target, args):
         if build_type == "cargo":
             binary = cargo_build(package, config, target, args)
         elif build_type == "make":
-            binary = make_build(package, config, args)
+            binary = make_build(package, config, target, args)
         else:
             raise ValueError("Unknown build type: {}".format(build_type))
 
@@ -414,6 +414,14 @@ def build_helpers(args):
         "packit": { "features": ["cli"] }
     }
     return recipe_build(helpers, get_host_target(), args)
+
+def build_rust():
+    """
+    Build the Rust toolchain.
+    """
+    import subprocess
+    print("Building Rust toolchain...")
+    subprocess.run(["./x", "build", "--config", "../rust-config.toml"], cwd="rust")
 
 def build_kernel_parts(k_recipe, args):
     """
@@ -656,6 +664,9 @@ def build(args):
     try:
         # Build required helpers
         helpers = build_helpers(args)
+
+        # Build the Rust toolchain for user mode
+        build_rust()
 
         for recipe in args.recipe:
             build_one(recipe, helpers, args)
