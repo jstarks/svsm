@@ -8,10 +8,10 @@
 	path = packit
 	url = https://github.com/coconut-svsm/packit.git
 [submodule "rust"]
-	path = rust
+	path = toolchain/rust
 	url = https://github.com/jstarks/rust
 	branch = svsm
 [submodule "cc-rs"]
-	path = cc-rs
+	path = toolchain/cc-rs
 	url = https://github.com/jstarks/cc-rs
 	branch = svsm-bootstrap
