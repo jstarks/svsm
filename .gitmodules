@@ -11,3 +11,7 @@
 	path = rust
 	url = https://github.com/jstarks/rust
 	branch = svsm
+[submodule "cc-rs"]
+	path = cc-rs
+	url = https://github.com/jstarks/cc-rs
+	branch = svsm-bootstrap
