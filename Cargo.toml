@@ -28,7 +28,7 @@ members = [
     "release", "coconut-abi", "libcoconut",
 ]
 exclude = [
-    "rust"
+    "toolchain"
 ]
 
 [workspace.dependencies]

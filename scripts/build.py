@@ -421,7 +421,7 @@ def build_rust():
     """
     import subprocess
     print("Building Rust toolchain...")
-    subprocess.run(["./x", "build", "--config", "../rust-config.toml"], cwd="toolchain/rust")
+    subprocess.run(["./x", "build", "--config", "../config.toml"], cwd="toolchain/rust", check=True)
 
 def build_kernel_parts(k_recipe, args):
     """
@@ -494,6 +494,7 @@ def build_fs_image(args, fs_config, helpers):
     if len(m_recipe) == 0:
         return None
 
+    # Build libcoconut for user-mode binaries to link against.
     cargo_build("coconut", {}, get_svsm_user_target(), args)
 
     binaries = recipe_build(m_recipe, get_svsm_user_target(), args)
