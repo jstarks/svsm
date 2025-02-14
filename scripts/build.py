@@ -324,7 +324,7 @@ def cargo_build(package, config, target, args):
     """
     runner = CargoRunner(package)
     if target == "x86_64-unknown-coconut":
-        runner.set_toolchain(os.path.abspath("rust/build/host/stage1"))
+        runner.set_toolchain(os.path.abspath("toolchain/rust/build/host/stage1"))
     runner.set_target(target)
     for feature in config.get("features", []):
         runner.add_feature(feature)
@@ -421,7 +421,7 @@ def build_rust():
     """
     import subprocess
     print("Building Rust toolchain...")
-    subprocess.run(["./x", "build", "--config", "../rust-config.toml"], cwd="rust")
+    subprocess.run(["./x", "build", "--config", "../rust-config.toml"], cwd="toolchain/rust")
 
 def build_kernel_parts(k_recipe, args):
     """
